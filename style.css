@@ -105,13 +105,41 @@ body {
     text-decoration: underline;
   }
 
-  .task-actions .edit-button,
-  .task-actions .delete-button {
+  .emoji-button {
+      background: none;
       border: none;
       padding: 0;
+      font-size: 18px;
       cursor: pointer;
   }
- .task .task-actions .edit-button,
- .task .task-actions .delete-button {
-    background-color: inherit; /* Inherit background color from the parent task element */
-  }
+
+  #calendar-view {
+      margin-top: 40px;
+      display: none;
+    }
+    #calendar-view h2 {
+      text-align: center;
+    }
+    .calendar-day {
+      margin-bottom: 20px;
+    }
+    .calendar-day h4 {
+      margin-bottom: 5px;
+    }
+    .calendar-task {
+      margin-bottom: 8px;
+      padding: 6px;
+      border-radius: 6px;
+    }
+    #view-toggle {
+      text-align: center;
+      margin-top: 20px;
+    }
+    #view-toggle button {
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+    }

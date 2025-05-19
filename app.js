@@ -23,6 +23,18 @@ let tasks = JSON.parse(localStorage.getItem("tasks")) || [
 ]
 
 let tagFilter = []
+let currentView = localStorage.getItem('taskView') || 'kanban'
+
+function getDueColor(dueDate) {
+  if (!dueDate) return '#f9f9f9';
+  const today = new Date();
+  const due = new Date(dueDate);
+  const days = Math.floor((due - today) / (1000 * 60 * 60 * 24));
+  if (days < 0) return '#ff4d4d';
+  if (days < 3) return '#ff9999';
+  if (days < 7) return '#ffcccc';
+  return '#f9f9f9';
+}
 
 function toggleForm() {
   const form = document.getElementById("task-form")
@@ -35,16 +47,18 @@ function toggleForm() {
 function saveTasks() {
   localStorage.setItem("tasks", JSON.stringify(tasks))
   renderTasks()
+  renderCalendar()
 }
 
 function renderTasks() {
-  document.getElementById("pending-column").innerHTML = "<h3>Pending</h3>"
-  document.getElementById("in-progress-column").innerHTML =
-    "<h3>In Progress</h3>"
-  document.getElementById("completed-column").innerHTML =
-    "<h3>Completed</h3>"
+  const kanban = document.getElementById('kanban-board');
+  if (kanban) { kanban.style.display = currentView === 'kanban' ? 'flex' : 'none'; }
+  const statuses = ['pending', 'in-progress', 'completed']
+  statuses.forEach(id => {
+    const col = document.getElementById(`${id}-column`);
+    if (col) col.innerHTML = `<h3>${id.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}</h3>`;
+  })
 
-  const statuses = ["pending", "in-progress", "completed"]
   statuses.forEach((status) => {
     let filtered = tasks.filter((task) => task.status === status)
     if (tagFilter.length) {
@@ -71,23 +85,22 @@ function renderTasks() {
       <strong>${task.title}</strong><br />
       <small>Tags: ${task.tags.map((tag) => `<span class="tag" onclick="filterByTag('${tag}')">${tag}</span>`).join(", ")}</small><br />
       <small><span class="date-display">${task.dueDate || "None"}</span><span class="calendar-icon" onclick="editDueDate(this, ${tasks.indexOf(task)})">📅</span></small><br />
-      <button onclick="editTask(${tasks.indexOf(task)})" title="Edit Task">🖊️</button>
- <button onclick="deleteTask(${tasks.indexOf(task)})" title="Delete Task">🗑️</button>
-
- `
+      <button class="emoji-button" onclick="editTask(${tasks.indexOf(task)})" title="Edit Task">🖊️</button>
+      <button class="emoji-button" onclick="deleteTask(${tasks.indexOf(task)})" title="Delete Task">🗑️</button>
+    `
       document.getElementById(`${status}-column`).appendChild(div)
     })
   })
 
- document.querySelectorAll('.calendar-icon').forEach(icon => {
-    icon.addEventListener('click', function() {
+  document.querySelectorAll('.calendar-icon').forEach(icon => {
+    icon.addEventListener('click', function () {
       const taskIndex = this.dataset.taskIndex; // Assuming you add a data-task-index attribute
       const task = tasks[taskIndex];
       const dateDisplay = this.previousElementSibling;
       const dateInput = document.createElement('input');
       dateInput.type = 'date';
       dateInput.value = task.dueDate || '';
-      dateInput.addEventListener('blur', function() {
+      dateInput.addEventListener('blur', function () {
         task.dueDate = this.value;
         saveTasks();
       });
@@ -100,21 +113,65 @@ function renderTasks() {
     : ""
 }
 
+function renderCalendar() {
+  const calendar = document.getElementById('calendar-view');
+  calendar.style.display = currentView === 'calendar' ? 'block' : 'none';
+  const now = new Date();
+  const weekAhead = new Date();
+  weekAhead.setDate(now.getDate() + 7);
+  const calendarDiv = document.getElementById('calendar-tasks');
+  calendarDiv.innerHTML = '';
+
+  const grouped = {};
+  tasks.filter(task => ['pending', 'in-progress'].includes(task.status) && task.dueDate).forEach(task => {
+    const due = new Date(task.dueDate);
+    if (due >= now && due <= weekAhead) {
+      const key = task.dueDate;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(task);
+    }
+  })
+
+  Object.keys(grouped).sort().forEach(date => {
+    const dayDiv = document.createElement('div')
+    dayDiv.className = 'calendar-day'
+    dayDiv.innerHTML = `<h4>${date}</h4>`
+    grouped[date].forEach(task => {
+      const taskDiv = document.createElement('div')
+      taskDiv.className = 'calendar-task'
+      taskDiv.style.backgroundColor = getDueColor(task.dueDate)
+      taskDiv.innerHTML = `<strong>${task.title}</strong> (${task.status})`
+      dayDiv.appendChild(taskDiv);
+    })
+    calendarDiv.appendChild(dayDiv)
+  })
+}
+
+function toggleView() {
+  currentView = currentView === 'kanban' ? 'calendar' : 'kanban'
+  localStorage.setItem('taskView', currentView)
+  renderTasks()
+  renderCalendar()
+}
+
 function filterByTag(tag) {
   if (!tagFilter.includes(tag)) {
     tagFilter.push(tag)
     renderTasks()
+    renderCalendar()
   }
 }
 
 function removeTagFilter(tag) {
   tagFilter = tagFilter.filter((t) => t !== tag)
   renderTasks()
+  renderCalendar()
 }
 
 function clearTagFilter() {
   tagFilter = []
   renderTasks()
+  renderCalendar()
 }
 
 function allowDrop(e) {
@@ -221,11 +278,12 @@ function editDueDate(element, index) {
   const dateInput = document.createElement('input');
   dateInput.type = 'date';
   dateInput.value = task.dueDate || '';
-  dateInput.addEventListener('blur', function() {
+  dateInput.addEventListener('blur', function () {
     task.dueDate = this.value;
     saveTasks();
-  });
+  })
   dateDisplay.replaceWith(dateInput);
 }
 
 renderTasks()
+renderCalendar()
