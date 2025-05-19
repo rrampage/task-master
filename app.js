@@ -161,8 +161,12 @@ function renderCalendar() {
 
 function render() {
   if (currentView === 'kanban') {
+    document.getElementById('kanban-board').style.display = 'flex';
+    document.getElementById('calendar-view').style.display = 'none';
     renderTasks()
   } else {
+    document.getElementById('kanban-board').style.display = 'none';
+    document.getElementById('calendar-view').style.display = 'block';
     renderCalendar()
   }
 }
