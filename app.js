@@ -159,7 +159,7 @@ function renderTasks() {
   })
 }*/
 
-function renderCalendar(tasks) {
+function renderCalendar() {
   const columns = {
     'pending': document.getElementById('calendar-pending'),
     'in-progress': document.getElementById('calendar-in-progress'),
