@@ -1,147 +1,227 @@
 body {
-    font-family: Arial, sans-serif;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-  h1 {
-    text-align: center;
-  }
-  #task-form {
-    display: none;
-    margin-top: 20px;
-  }
-  #show-form-btn {
-    display: block;
-    margin: 20px auto;
-    font-size: 32px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: none;
-    background: #007bff;
-    color: white;
-    cursor: pointer;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-  }
-  .task {
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-  }
-  .task.pending {
-    background-color: #ffe6e6;
-  }
-  .task.in-progress {
-    background-color: #ffe5cc;
-  }
-  .task.completed {
-    background-color: #e0ffe0;
-  }
-  .task.dragging {
-    opacity: 0.5;
-  }
-  label {
-    display: block;
-    margin-top: 10px;
-  }
-  input,
-  select,
-  textarea {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-  }
-  button {
-    margin-top: 10px;
-  }
-  .controls button {
-    margin-right: 10px;
-  }
-  .kanban {
-    display: flex;
-    gap: 20px;
-    margin-top: 30px;
-  }
-  .kanban-column {
-    flex: 1;
-    background: #f0f0f0;
-    border-radius: 8px;
-    padding: 10px;
-    min-height: 300px;
-  }
-  .kanban-column h3 {
-    text-align: center;
-  }
-  .kanban-column.drag-over {
-    background-color: #d0e7ff;
-    transition: background-color 0.2s;
-  }
-  .tag {
-    cursor: pointer;
-    color: blue;
-    margin-right: 5px;
-  }
-  .tag:hover {
-    text-decoration: underline;
-  }
-  #filter-indicator {
-    margin-top: 10px;
-    font-style: italic;
-    text-align: center;
-  }
-  #filter-indicator .clear-filter {
-    margin-left: 10px;
-    cursor: pointer;
-    color: red;
-    font-weight: bold;
-    text-decoration: none;
-  }
-  #filter-indicator .clear-filter:hover {
-    text-decoration: underline;
-  }
+  font-family: Arial, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
 
-  .emoji-button {
-      background: none;
-      border: none;
-      padding: 0;
-      font-size: 18px;
-      cursor: pointer;
-  }
+h1 {
+  text-align: center;
+}
 
-  #calendar-view {
-      margin-top: 40px;
-      display: none;
-    }
-    #calendar-view h2 {
-      text-align: center;
-    }
-    .calendar-day {
-      margin-bottom: 20px;
-    }
-    .calendar-day h4 {
-      margin-bottom: 5px;
-    }
-    .calendar-task {
-      margin-bottom: 8px;
-      padding: 6px;
-      border-radius: 6px;
-    }
-    #view-toggle {
-      text-align: center;
-      margin: 20px auto;
-      bottom: 20px;
-      right: 50px;
-    }
-    #view-toggle button {
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #007bff;
-      color: white;
-    }
+#task-form {
+  display: none;
+  margin-top: 20px;
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#task-form label {
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+}
+
+#task-form input,
+#task-form select,
+#task-form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+
+#show-form-btn {
+  display: block;
+  margin: 20px auto;
+  font-size: 32px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+}
+
+#show-form-btn button:hover {
+  background-color: #0056b3;
+}
+
+.task {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.task.pending {
+  background-color: #ffe6e6;
+}
+
+.task.in-progress {
+  background-color: #ffe5cc;
+}
+
+.task.completed {
+  background-color: #e0ffe0;
+}
+
+.task.dragging {
+  opacity: 0.5;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+}
+
+button {
+  margin-top: 10px;
+}
+
+.controls button {
+  margin-right: 10px;
+}
+
+.kanban {
+  display: flex;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.kanban-column {
+  flex: 1;
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 10px;
+  min-height: 300px;
+}
+
+.kanban-column h3 {
+  text-align: center;
+}
+
+.kanban-column.drag-over {
+  background-color: #d0e7ff;
+  transition: background-color 0.2s;
+}
+
+.tag {
+  cursor: pointer;
+  color: blue;
+  margin-right: 5px;
+}
+
+.tag:hover {
+  text-decoration: underline;
+}
+
+#filter-indicator {
+  margin-top: 10px;
+  font-style: italic;
+  text-align: center;
+}
+
+#filter-indicator .clear-filter {
+  margin-left: 10px;
+  cursor: pointer;
+  color: red;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+#filter-indicator .clear-filter:hover {
+  text-decoration: underline;
+}
+
+.emoji-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+#calendar-view {
+  margin-top: 40px;
+  display: none;
+}
+
+#calendar-view h2 {
+  text-align: center;
+}
+
+.calendar-board {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.calendar-column {
+  flex: 1;
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 10px;
+  min-height: 300px;
+}
+
+.calendar-column h3 {
+  text-align: center;
+}
+
+.calendar-day {
+  margin-bottom: 15px;
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-day h4 {
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.calendar-task {
+  margin-bottom: 8px;
+  padding: 6px;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+#view-toggle {
+  text-align: center;
+  margin: 20px auto;
+  bottom: 20px;
+  right: 50px;
+}
+
+#view-toggle button {
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #007bff;
+  color: white;
+}

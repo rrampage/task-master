@@ -38,8 +38,8 @@ function getDueColor(dueDate) {
   if (days === 0) return '#ff1a1a'
   if (days <= xdays) {
     const r = 255
-    const g = 26 + Math.round(178*days / xdays)
-    const b = 26 + Math.round(178*days / xdays)
+    const g = 26 + Math.round(178 * days / xdays)
+    const b = 26 + Math.round(178 * days / xdays)
     return `rgb(${r},${g},${b})`
   }
   return '#ffe6e6'
@@ -83,7 +83,7 @@ function renderTasks() {
       const div = document.createElement("div")
       div.className = "task" + " " + (task.status)
       if (task.status !== 'completed') {
-        div.style.backgroundColor =  getDueColor(task.dueDate)
+        div.style.backgroundColor = getDueColor(task.dueDate)
       }
       div.draggable = true
       div.ondragstart = (e) => {
@@ -125,7 +125,7 @@ function renderTasks() {
     : ""
 }
 
-function renderCalendar() {
+/*function renderCalendar() {
   const calendar = document.getElementById('calendar-view')
   calendar.style.display = currentView === 'calendar' ? 'block' : 'none'
   const now = new Date()
@@ -157,6 +157,49 @@ function renderCalendar() {
     })
     calendarDiv.appendChild(dayDiv)
   })
+}*/
+
+function renderCalendar(tasks) {
+  const columns = {
+    'pending': document.getElementById('calendar-pending'),
+    'in-progress': document.getElementById('calendar-in-progress'),
+    'completed': document.getElementById('calendar-completed')
+  }
+
+  for (const col of Object.values(columns)) {
+    col.innerHTML = '<h3>' + col.querySelector('h3').innerText + '</h3>'
+  }
+
+  const today = new Date()
+  const nextWeek = new Date()
+  nextWeek.setDate(today.getDate() + 7)
+
+  tasks
+    .filter(task => task.status && task.dueDate)
+    .map(task => ({ ...task, due: new Date(task.dueDate) }))
+    .filter(task => task.due >= today && task.due <= nextWeek)
+    .sort((a, b) => a.due - b.due)
+    .forEach(task => {
+      const col = columns[task.status]
+      if (!col) return
+
+      const dateStr = task.due.toDateString()
+      let dayContainer = col.querySelector(`[data-date="${dateStr}"]`)
+
+      if (!dayContainer) {
+        dayContainer = document.createElement('div')
+        dayContainer.className = 'calendar-day'
+        dayContainer.setAttribute('data-date', dateStr)
+        dayContainer.innerHTML = `<h4>${dateStr}</h4>`
+        col.appendChild(dayContainer)
+      }
+
+      const card = document.createElement('div')
+      card.className = 'calendar-task'
+      card.style.backgroundColor = getDueDateColor(task.dueDate)
+      card.textContent = task.title
+      dayContainer.appendChild(card)
+    })
 }
 
 function render() {
