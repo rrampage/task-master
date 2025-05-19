@@ -196,7 +196,7 @@ function renderCalendar() {
 
       const card = document.createElement('div')
       card.className = 'calendar-task'
-      card.style.backgroundColor = getDueDateColor(task.dueDate)
+      card.style.backgroundColor = getDueColor(task.dueDate)
       card.textContent = task.title
       dayContainer.appendChild(card)
     })
