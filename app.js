@@ -26,15 +26,25 @@ let tagFilter = []
 let currentView = localStorage.getItem('taskView') || 'kanban'
 
 function getDueColor(dueDate) {
-  if (!dueDate) return '#f9f9f9';
-  const today = new Date();
-  const due = new Date(dueDate);
-  const days = Math.floor((due - today) / (1000 * 60 * 60 * 24));
-  if (days < 0) return '#ff4d4d';
-  if (days < 3) return '#ff9999';
-  if (days < 7) return '#ffcccc';
-  return '#f9f9f9';
+  if (!dueDate) return '#ffe6e6'
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const due = new Date(dueDate)
+  const xdays = 10
+  due.setHours(0, 0, 0, 0)
+  const days = Math.floor((due - today) / (1000 * 60 * 60 * 24))
+
+  if (days < 0) return '#ff0000'
+  if (days === 0) return '#ff1a1a'
+  if (days <= xdays) {
+    const r = 255
+    const g = 26 + Math.round(178*(xdays-days) / xdays)
+    const b = 26 + Math.round(178*(xdays-days) / xdays)
+    return `rgb(${r},${g},${b})`
+  }
+  return '#ffe6e6'
 }
+
 
 function toggleForm() {
   const form = document.getElementById("task-form")
@@ -51,12 +61,12 @@ function saveTasks() {
 }
 
 function renderTasks() {
-  const kanban = document.getElementById('kanban-board');
-  if (kanban) { kanban.style.display = currentView === 'kanban' ? 'flex' : 'none'; }
+  const kanban = document.getElementById('kanban-board')
+  if (kanban) { kanban.style.display = currentView === 'kanban' ? 'flex' : 'none' }
   const statuses = ['pending', 'in-progress', 'completed']
   statuses.forEach(id => {
-    const col = document.getElementById(`${id}-column`);
-    if (col) col.innerHTML = `<h3>${id.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}</h3>`;
+    const col = document.getElementById(`${id}-column`)
+    if (col) col.innerHTML = `<h3>${id.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}</h3>`
   })
 
   statuses.forEach((status) => {
@@ -73,6 +83,9 @@ function renderTasks() {
     filtered.forEach((task, index) => {
       const div = document.createElement("div")
       div.className = "task" + " " + (task.status)
+      if (task.status !== 'completed') {
+        div.style.backgroundColor =  getDueColor(task.dueDate)
+      }
       div.draggable = true
       div.ondragstart = (e) => {
         e.dataTransfer.setData("text/plain", tasks.indexOf(task))
@@ -94,17 +107,17 @@ function renderTasks() {
 
   document.querySelectorAll('.calendar-icon').forEach(icon => {
     icon.addEventListener('click', function () {
-      const taskIndex = this.dataset.taskIndex; // Assuming you add a data-task-index attribute
-      const task = tasks[taskIndex];
-      const dateDisplay = this.previousElementSibling;
-      const dateInput = document.createElement('input');
-      dateInput.type = 'date';
-      dateInput.value = task.dueDate || '';
+      const taskIndex = this.dataset.taskIndex // Assuming you add a data-task-index attribute
+      const task = tasks[taskIndex]
+      const dateDisplay = this.previousElementSibling
+      const dateInput = document.createElement('input')
+      dateInput.type = 'date'
+      dateInput.value = task.dueDate || ''
       dateInput.addEventListener('blur', function () {
-        task.dueDate = this.value;
-        saveTasks();
-      });
-      dateDisplay.replaceWith(dateInput);
+        task.dueDate = this.value
+        saveTasks()
+      })
+      dateDisplay.replaceWith(dateInput)
     })
   })
 
@@ -114,21 +127,21 @@ function renderTasks() {
 }
 
 function renderCalendar() {
-  const calendar = document.getElementById('calendar-view');
-  calendar.style.display = currentView === 'calendar' ? 'block' : 'none';
-  const now = new Date();
-  const weekAhead = new Date();
-  weekAhead.setDate(now.getDate() + 7);
-  const calendarDiv = document.getElementById('calendar-tasks');
-  calendarDiv.innerHTML = '';
+  const calendar = document.getElementById('calendar-view')
+  calendar.style.display = currentView === 'calendar' ? 'block' : 'none'
+  const now = new Date()
+  const weekAhead = new Date()
+  weekAhead.setDate(now.getDate() + 7)
+  const calendarDiv = document.getElementById('calendar-tasks')
+  calendarDiv.innerHTML = ''
 
-  const grouped = {};
+  const grouped = {}
   tasks.filter(task => ['pending', 'in-progress'].includes(task.status) && task.dueDate).forEach(task => {
-    const due = new Date(task.dueDate);
+    const due = new Date(task.dueDate)
     if (due >= now && due <= weekAhead) {
-      const key = task.dueDate;
-      if (!grouped[key]) grouped[key] = [];
-      grouped[key].push(task);
+      const key = task.dueDate
+      if (!grouped[key]) grouped[key] = []
+      grouped[key].push(task)
     }
   })
 
@@ -141,7 +154,7 @@ function renderCalendar() {
       taskDiv.className = 'calendar-task'
       taskDiv.style.backgroundColor = getDueColor(task.dueDate)
       taskDiv.innerHTML = `<strong>${task.title}</strong> (${task.status})`
-      dayDiv.appendChild(taskDiv);
+      dayDiv.appendChild(taskDiv)
     })
     calendarDiv.appendChild(dayDiv)
   })
@@ -273,16 +286,16 @@ function importTasks() {
 }
 
 function editDueDate(element, index) {
-  const task = tasks[index];
-  const dateDisplay = element.previousElementSibling;
-  const dateInput = document.createElement('input');
-  dateInput.type = 'date';
-  dateInput.value = task.dueDate || '';
+  const task = tasks[index]
+  const dateDisplay = element.previousElementSibling
+  const dateInput = document.createElement('input')
+  dateInput.type = 'date'
+  dateInput.value = task.dueDate || ''
   dateInput.addEventListener('blur', function () {
-    task.dueDate = this.value;
-    saveTasks();
+    task.dueDate = this.value
+    saveTasks()
   })
-  dateDisplay.replaceWith(dateInput);
+  dateDisplay.replaceWith(dateInput)
 }
 
 renderTasks()

@@ -133,7 +133,9 @@ body {
     }
     #view-toggle {
       text-align: center;
-      margin-top: 20px;
+      margin: 20px auto;
+      bottom: 20px;
+      right: 50px;
     }
     #view-toggle button {
       border: none;
