@@ -56,8 +56,7 @@ function toggleForm() {
 
 function saveTasks() {
   localStorage.setItem("tasks", JSON.stringify(tasks))
-  renderTasks()
-  renderCalendar()
+  render()
 }
 
 function renderTasks() {
@@ -160,31 +159,35 @@ function renderCalendar() {
   })
 }
 
+function render() {
+  if (currentView === 'kanban') {
+    renderTasks()
+  } else {
+    renderCalendar()
+  }
+}
+
 function toggleView() {
   currentView = currentView === 'kanban' ? 'calendar' : 'kanban'
   localStorage.setItem('taskView', currentView)
-  renderTasks()
-  renderCalendar()
+  render()
 }
 
 function filterByTag(tag) {
   if (!tagFilter.includes(tag)) {
     tagFilter.push(tag)
-    renderTasks()
-    renderCalendar()
+    render()
   }
 }
 
 function removeTagFilter(tag) {
   tagFilter = tagFilter.filter((t) => t !== tag)
-  renderTasks()
-  renderCalendar()
+  render()
 }
 
 function clearTagFilter() {
   tagFilter = []
-  renderTasks()
-  renderCalendar()
+  render()
 }
 
 function allowDrop(e) {
@@ -298,5 +301,4 @@ function editDueDate(element, index) {
   dateDisplay.replaceWith(dateInput)
 }
 
-renderTasks()
-renderCalendar()
+render()
