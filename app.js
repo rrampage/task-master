@@ -38,8 +38,8 @@ function getDueColor(dueDate) {
   if (days === 0) return '#ff1a1a'
   if (days <= xdays) {
     const r = 255
-    const g = 26 + Math.round(178*(xdays-days) / xdays)
-    const b = 26 + Math.round(178*(xdays-days) / xdays)
+    const g = 26 + Math.round(178*days / xdays)
+    const b = 26 + Math.round(178*days / xdays)
     return `rgb(${r},${g},${b})`
   }
   return '#ffe6e6'
