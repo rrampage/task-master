@@ -26,7 +26,7 @@ let tagFilter = []
 let currentView = localStorage.getItem('taskView') || 'kanban'
 
 function getDueColor(dueDate) {
-  if (!dueDate) return '#ffe6e6'
+  if (!dueDate) return '#ffddcc'
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const due = new Date(dueDate)
@@ -34,12 +34,12 @@ function getDueColor(dueDate) {
   due.setHours(0, 0, 0, 0)
   const days = Math.floor((due - today) / (1000 * 60 * 60 * 24))
 
-  if (days < 0) return '#ff0000'
+  if (days < 0) return '#ff4d4d'
   if (days === 0) return '#ff1a1a'
   if (days <= xdays) {
     const r = 255
-    const g = 26 + Math.round(178 * days / xdays)
-    const b = 26 + Math.round(178 * days / xdays)
+    const g = 119 + Math.round(119 * days / xdays)
+    const b = 51 + Math.round(187 * days / xdays)
     return `rgb(${r},${g},${b})`
   }
   return '#ffe6e6'
@@ -76,7 +76,7 @@ function renderTasks() {
       )
     }
     filtered.sort((a, b) =>
-      (a.dueDate || "").localeCompare(b.dueDate || ""),
+      (a.dueDate || "2099-12-31").localeCompare(b.dueDate || "2099-12-31"),
     )
 
     filtered.forEach((task, index) => {
