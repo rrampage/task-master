@@ -45,6 +45,12 @@ function getDueColor(dueDate) {
   return '#ffe6e6'
 }
 
+function toggleHelpModal() {
+  const modal = document.getElementById('help-modal');
+  if (modal) {
+    modal.style.display = modal.style.display === 'none' || modal.style.display === '' ? 'block' : 'none';
+  }
+}
 
 function toggleForm() {
   const form = document.getElementById("task-form")
@@ -80,14 +86,18 @@ function renderTasks() {
     )
 
     filtered.forEach((task, index) => {
+      const globalIndex = tasks.indexOf(task); // Get the actual index in the global tasks array
       const div = document.createElement("div")
       div.className = "task" + " " + (task.status)
       if (task.status !== 'completed') {
         div.style.backgroundColor = getDueColor(task.dueDate)
       }
       div.draggable = true
+      div.tabIndex = 0; // Make task focusable
+      div.dataset.taskIndex = globalIndex; // Store global task index
+
       div.ondragstart = (e) => {
-        e.dataTransfer.setData("text/plain", tasks.indexOf(task))
+        e.dataTransfer.setData("text/plain", globalIndex)
         div.classList.add("dragging")
       }
       div.ondragend = () => {
@@ -96,9 +106,9 @@ function renderTasks() {
       div.innerHTML = `
       <strong>${task.title}</strong><br />
       <small>Tags: ${task.tags.map((tag) => `<span class="tag" onclick="filterByTag('${tag}')">${tag}</span>`).join(", ")}</small><br />
-      <small><span class="date-display">${task.dueDate || "None"}</span><span class="calendar-icon" onclick="editDueDate(this, ${tasks.indexOf(task)})">📅</span></small><br />
-      <button class="emoji-button" onclick="editTask(${tasks.indexOf(task)})" title="Edit Task">🖊️</button>
-      <button class="emoji-button" onclick="deleteTask(${tasks.indexOf(task)})" title="Delete Task">🗑️</button>
+      <small><span class="date-display">${task.dueDate || "None"}</span><span class="calendar-icon" onclick="editDueDate(this, ${globalIndex})">📅</span></small><br />
+      <button class="emoji-button" onclick="editTask(${globalIndex})" title="Edit Task">🖊️</button>
+      <button class="emoji-button" onclick="deleteTask(${globalIndex})" title="Delete Task">🗑️</button>
     `
       document.getElementById(`${status}-column`).appendChild(div)
     })
@@ -195,9 +205,22 @@ function renderCalendar() {
       }
 
       const card = document.createElement('div')
-      card.className = 'calendar-task'
+      card.className = 'calendar-task' // Keep this class for styling
+      card.classList.add('task'); // Add generic 'task' class for shared focus/event logic if any
       card.style.backgroundColor = getDueColor(task.dueDate)
       card.textContent = task.title
+      card.tabIndex = 0; // Make it focusable
+      card.dataset.taskTitle = task.title; 
+      card.dataset.taskDueDate = task.dueDate;
+      card.dataset.taskStatus = task.status;
+      card.dataset.taskDateStr = dateStr; // Store the date string for navigation
+
+      // Store the original task index for easier editing
+      const originalTaskIndex = tasks.findIndex(t => t.title === task.title && t.dueDate === task.dueDate && t.status === task.status);
+      if (originalTaskIndex !== -1) {
+        card.dataset.originalTaskIndex = originalTaskIndex;
+      }
+
       dayContainer.appendChild(card)
     })
 }
@@ -349,3 +372,258 @@ function editDueDate(element, index) {
 }
 
 render()
+
+document.addEventListener('keydown', function(event) {
+  // Check for '?' key press for help modal
+  if (event.key === '?') {
+    const activeElement = document.activeElement;
+    if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT')) {
+      // Do nothing if focused on an input, textarea, or select
+    } else {
+      toggleHelpModal();
+      event.preventDefault(); // Prevent '?' from appearing in search bars if any, or other default browser actions
+    }
+  }
+
+  // Check for 't' key press for toggling form, ensuring not in an input field
+  if (event.key === 't' || event.key === 'T') { // Check for both 't' and 'T'
+    const activeElement = document.activeElement;
+    if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT')) {
+      // Do nothing if focused on an input, textarea, or select
+    } else {
+      toggleForm();
+    }
+  }
+
+  // Check for 'Delete' or 'Backspace' key press for deleting tasks
+  if (event.key === 'Delete' || event.key === 'Backspace') {
+    const activeElement = document.activeElement;
+    // Ensure not typing in an input, textarea, or select AND a task is focused
+    if (activeElement && !(activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT')) {
+      if (activeElement.classList.contains('task')) { // This covers both Kanban .task and Calendar .calendar-task (which also has .task)
+        event.preventDefault(); // Prevent default browser behavior (e.g., back navigation or deleting text in an input field if somehow missed by above check)
+        let taskIndex = -1;
+        if (currentView === 'kanban' && activeElement.dataset.taskIndex) {
+          taskIndex = parseInt(activeElement.dataset.taskIndex);
+        } else if (currentView === 'calendar' && activeElement.dataset.originalTaskIndex) {
+          taskIndex = parseInt(activeElement.dataset.originalTaskIndex);
+        }
+        
+        if (taskIndex !== -1) {
+          deleteTask(taskIndex);
+          // Note: Focus will be lost after deletion. Future enhancement could be to focus next/prev task.
+        }
+      }
+    }
+  }
+
+  // Check for 'e' or 'E' key press for editing tasks
+  if (event.key === 'e' || event.key === 'E') {
+    const activeElement = document.activeElement;
+    // Ensure not typing in an input, textarea, or select AND a task is focused
+    if (activeElement && !(activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT')) {
+      if (activeElement.classList.contains('task')) { // This covers both Kanban .task and Calendar .calendar-task (which also has .task)
+        if (currentView === 'kanban' && activeElement.dataset.taskIndex) {
+          const taskIndex = parseInt(activeElement.dataset.taskIndex);
+          editTask(taskIndex);
+          event.preventDefault(); // Prevent 'e' from being typed into any inputs if form opens quickly
+        } else if (currentView === 'calendar' && activeElement.dataset.originalTaskIndex) {
+          const taskIndex = parseInt(activeElement.dataset.originalTaskIndex);
+          editTask(taskIndex);
+          event.preventDefault(); // Prevent 'e' from being typed into any inputs if form opens quickly
+        }
+      }
+    }
+  }
+
+  // Arrow key navigation
+  if (currentView === 'kanban' && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+    event.preventDefault(); // Prevent default scrolling behavior
+    const focusedElement = document.activeElement;
+
+    if (!focusedElement || !focusedElement.classList.contains('task')) {
+      // If no task is focused, or focused element is not a task, focus the first task in the first column (Kanban)
+      const firstColumn = document.getElementById('pending-column');
+      if (firstColumn) {
+        const firstTask = firstColumn.querySelector('.task');
+        if (firstTask) {
+          firstTask.focus();
+        }
+      }
+      return;
+    }
+
+    const currentKanbanColumnEl = focusedElement.closest('.column');
+    if (!currentKanbanColumnEl) return;
+
+    const currentKanbanColumnTasks = Array.from(currentKanbanColumnEl.querySelectorAll('.task'));
+    const currentTaskKanbanColumnIndex = currentKanbanColumnTasks.indexOf(focusedElement);
+
+    const kanbanColumnElements = Array.from(document.querySelectorAll('#kanban-board .column'));
+    const currentKanbanColumnBoardIndex = kanbanColumnElements.indexOf(currentKanbanColumnEl);
+
+    if (event.key === 'ArrowUp') {
+      if (currentTaskKanbanColumnIndex > 0) {
+        currentKanbanColumnTasks[currentTaskKanbanColumnIndex - 1].focus();
+      } else {
+        currentKanbanColumnTasks[currentKanbanColumnTasks.length - 1].focus();
+      }
+    } else if (event.key === 'ArrowDown') {
+      if (currentTaskKanbanColumnIndex < currentKanbanColumnTasks.length - 1) {
+        currentKanbanColumnTasks[currentTaskKanbanColumnIndex + 1].focus();
+      } else {
+        currentKanbanColumnTasks[0].focus();
+      }
+    } else if (event.key === 'ArrowLeft') {
+      let prevKanbanColumnIndex = currentKanbanColumnBoardIndex - 1;
+      if (prevKanbanColumnIndex < 0) {
+        prevKanbanColumnIndex = kanbanColumnElements.length - 1;
+      }
+      const prevKanbanColumnTasks = Array.from(kanbanColumnElements[prevKanbanColumnIndex].querySelectorAll('.task'));
+      if (prevKanbanColumnTasks.length > 0) {
+        prevKanbanColumnTasks[0].focus();
+      } else {
+        for (let i = 1; i < kanbanColumnElements.length; i++) {
+          let tryIndex = (prevKanbanColumnIndex - i + kanbanColumnElements.length) % kanbanColumnElements.length;
+          let targetTasks = Array.from(kanbanColumnElements[tryIndex].querySelectorAll('.task'));
+          if (targetTasks.length > 0) {
+            targetTasks[0].focus();
+            break;
+          }
+        }
+      }
+    } else if (event.key === 'ArrowRight') {
+      let nextKanbanColumnIndex = currentKanbanColumnBoardIndex + 1;
+      if (nextKanbanColumnIndex >= kanbanColumnElements.length) {
+        nextKanbanColumnIndex = 0;
+      }
+      const nextKanbanColumnTasks = Array.from(kanbanColumnElements[nextKanbanColumnIndex].querySelectorAll('.task'));
+      if (nextKanbanColumnTasks.length > 0) {
+        nextKanbanColumnTasks[0].focus();
+      } else {
+         for (let i = 1; i < kanbanColumnElements.length; i++) {
+          let tryIndex = (nextKanbanColumnIndex + i) % kanbanColumnElements.length;
+          let targetTasks = Array.from(kanbanColumnElements[tryIndex].querySelectorAll('.task'));
+          if (targetTasks.length > 0) {
+            targetTasks[0].focus();
+            break;
+          }
+        }
+      }
+    }
+  } else if (currentView === 'calendar' && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+    event.preventDefault(); // Prevent default scrolling behavior
+    const focusedElement = document.activeElement;
+
+    if (!focusedElement || !focusedElement.classList.contains('calendar-task')) {
+      // If no task is focused, or focused element is not a calendar task, focus the first task available
+      const firstCalendarTask = document.querySelector('#calendar-view .calendar-task');
+      if (firstCalendarTask) {
+        firstCalendarTask.focus();
+      }
+      return;
+    }
+
+    const currentDayEl = focusedElement.closest('.calendar-day');
+    const currentColumnEl = focusedElement.closest('[id^="calendar-"]'); // e.g. calendar-pending, calendar-in-progress
+    if (!currentDayEl || !currentColumnEl) return;
+
+    const tasksInCurrentDayAndColumn = Array.from(currentDayEl.querySelectorAll(`.calendar-task[data-task-status="${focusedElement.dataset.taskStatus}"]`));
+    const currentTaskIndexInDayColumn = tasksInCurrentDayAndColumn.indexOf(focusedElement);
+    
+    const calendarStatusColumns = ['calendar-pending', 'calendar-in-progress', 'calendar-completed'];
+    const currentStatusIndex = calendarStatusColumns.indexOf(currentColumnEl.id);
+
+    if (event.key === 'ArrowUp') {
+      if (currentTaskIndexInDayColumn > 0) {
+        tasksInCurrentDayAndColumn[currentTaskIndexInDayColumn - 1].focus();
+      } else {
+        // Try to move to previous day in the same status column
+        let prevDayEl = currentDayEl.previousElementSibling;
+        while(prevDayEl && !prevDayEl.classList.contains('calendar-day')) { // Skip h4 etc.
+            prevDayEl = prevDayEl.previousElementSibling;
+        }
+        if (prevDayEl) {
+          const tasksInPrevDay = Array.from(prevDayEl.querySelectorAll(`.calendar-task[data-task-status="${focusedElement.dataset.taskStatus}"]`));
+          if (tasksInPrevDay.length > 0) {
+            tasksInPrevDay[tasksInPrevDay.length - 1].focus();
+          }
+        } else {
+          // Wrap to the last task of the last day in the current column
+          const allDaysInColumn = Array.from(currentColumnEl.querySelectorAll('.calendar-day'));
+          if (allDaysInColumn.length > 0) {
+            const lastDayEl = allDaysInColumn[allDaysInColumn.length -1];
+            const tasksInLastDay = Array.from(lastDayEl.querySelectorAll(`.calendar-task[data-task-status="${focusedElement.dataset.taskStatus}"]`));
+            if(tasksInLastDay.length > 0) tasksInLastDay[tasksInLastDay.length -1].focus();
+          }
+        }
+      }
+    } else if (event.key === 'ArrowDown') {
+      if (currentTaskIndexInDayColumn < tasksInCurrentDayAndColumn.length - 1) {
+        tasksInCurrentDayAndColumn[currentTaskIndexInDayColumn + 1].focus();
+      } else {
+        // Try to move to next day in the same status column
+        let nextDayEl = currentDayEl.nextElementSibling;
+        while(nextDayEl && !nextDayEl.classList.contains('calendar-day')) {
+            nextDayEl = nextDayEl.nextElementSibling;
+        }
+        if (nextDayEl) {
+          const tasksInNextDay = Array.from(nextDayEl.querySelectorAll(`.calendar-task[data-task-status="${focusedElement.dataset.taskStatus}"]`));
+          if (tasksInNextDay.length > 0) {
+            tasksInNextDay[0].focus();
+          }
+        } else {
+           // Wrap to the first task of the first day in the current column
+           const firstDayEl = currentColumnEl.querySelector('.calendar-day');
+           if (firstDayEl) {
+             const tasksInFirstDay = Array.from(firstDayEl.querySelectorAll(`.calendar-task[data-task-status="${focusedElement.dataset.taskStatus}"]`));
+             if(tasksInFirstDay.length > 0) tasksInFirstDay[0].focus();
+           }
+        }
+      }
+    } else if (event.key === 'ArrowLeft') {
+      let targetStatusIndex = currentStatusIndex - 1;
+      if (targetStatusIndex < 0) targetStatusIndex = calendarStatusColumns.length - 1; // wrap
+
+      for(let i=0; i<calendarStatusColumns.length; i++){
+        const targetColumnId = calendarStatusColumns[targetStatusIndex];
+        const targetColumnEl = document.getElementById(targetColumnId);
+        if (targetColumnEl) {
+          const targetDayEl = targetColumnEl.querySelector(`[data-date="${focusedElement.dataset.taskDateStr}"]`);
+          if (targetDayEl) {
+            const tasksInTarget = Array.from(targetDayEl.querySelectorAll('.calendar-task'));
+            if (tasksInTarget.length > 0) {
+              tasksInTarget[0].focus();
+              break;
+            }
+          }
+        }
+        targetStatusIndex = (targetStatusIndex - 1 + calendarStatusColumns.length) % calendarStatusColumns.length; // try next if empty
+         if(targetStatusIndex === currentStatusIndex) break; // full circle
+      }
+
+    } else if (event.key === 'ArrowRight') {
+      let targetStatusIndex = currentStatusIndex + 1;
+      if (targetStatusIndex >= calendarStatusColumns.length) targetStatusIndex = 0; // wrap
+      
+      for(let i=0; i<calendarStatusColumns.length; i++){
+        const targetColumnId = calendarStatusColumns[targetStatusIndex];
+        const targetColumnEl = document.getElementById(targetColumnId);
+        if (targetColumnEl) {
+          const targetDayEl = targetColumnEl.querySelector(`[data-date="${focusedElement.dataset.taskDateStr}"]`);
+          if (targetDayEl) {
+            const tasksInTarget = Array.from(targetDayEl.querySelectorAll('.calendar-task'));
+            if (tasksInTarget.length > 0) {
+              tasksInTarget[0].focus();
+              break;
+            }
+          }
+        }
+        targetStatusIndex = (targetStatusIndex + 1) % calendarStatusColumns.length; // try next if empty
+        if(targetStatusIndex === currentStatusIndex) break; // full circle
+      }
+    }
+  }
+});
+
+// Ensure a newline character at the end of the file
