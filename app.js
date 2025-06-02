@@ -52,12 +52,25 @@ function toggleHelpModal() {
   }
 }
 
-function toggleForm() {
+function toggleTaskModal(isEdit = false) {
+  const modal = document.getElementById("task-modal")
   const form = document.getElementById("task-form")
-  form.style.display =
-    form.style.display === "none" || !form.style.display
-      ? "block"
-      : "none"
+  const taskIdField = document.getElementById("task-id")
+  const titleInput = document.getElementById("title")
+
+  if (modal.style.display === "block" || modal.style.display === "") {
+    modal.style.display = "none"
+  } else {
+    if (!isEdit) { // If not an edit operation, it's a new task
+      form.reset()
+      taskIdField.value = ""
+    }
+    modal.style.display = "block"
+    // Focus the title field when opening, prioritize if it's a new task or if editTask specifically requests it later
+    if (titleInput) {
+      titleInput.focus()
+    }
+  }
 }
 
 function saveTasks() {
@@ -135,39 +148,6 @@ function renderTasks() {
     : ""
 }
 
-/*function renderCalendar() {
-  const calendar = document.getElementById('calendar-view')
-  calendar.style.display = currentView === 'calendar' ? 'block' : 'none'
-  const now = new Date()
-  const weekAhead = new Date()
-  weekAhead.setDate(now.getDate() + 7)
-  const calendarDiv = document.getElementById('calendar-tasks')
-  calendarDiv.innerHTML = ''
-
-  const grouped = {}
-  tasks.filter(task => ['pending', 'in-progress'].includes(task.status) && task.dueDate).forEach(task => {
-    const due = new Date(task.dueDate)
-    if (due >= now && due <= weekAhead) {
-      const key = task.dueDate
-      if (!grouped[key]) grouped[key] = []
-      grouped[key].push(task)
-    }
-  })
-
-  Object.keys(grouped).sort().forEach(date => {
-    const dayDiv = document.createElement('div')
-    dayDiv.className = 'calendar-day'
-    dayDiv.innerHTML = `<h4>${date}</h4>`
-    grouped[date].forEach(task => {
-      const taskDiv = document.createElement('div')
-      taskDiv.className = 'calendar-task'
-      taskDiv.style.backgroundColor = getDueColor(task.dueDate)
-      taskDiv.innerHTML = `<strong>${task.title}</strong> (${task.status})`
-      dayDiv.appendChild(taskDiv)
-    })
-    calendarDiv.appendChild(dayDiv)
-  })
-}*/
 
 function renderCalendar() {
   const columns = {
@@ -216,7 +196,7 @@ function renderCalendar() {
       card.dataset.taskDateStr = dateStr // Store the date string for navigation
 
       // Store the original task index for easier editing
-      const originalTaskIndex = tasks.findIndex(t => t.title === task.title && t.dueDate === task.dueDate && t.status === task.status);
+      const originalTaskIndex = tasks.findIndex(t => t.title === task.title && t.dueDate === task.dueDate && t.status === task.status)
       if (originalTaskIndex !== -1) {
         card.dataset.originalTaskIndex = originalTaskIndex
       }
@@ -281,7 +261,7 @@ function editTask(index) {
   document.getElementById("status").value = task.status
   document.getElementById("due-date").value = task.dueDate
   document.getElementById("task-id").value = index
-  document.getElementById("task-form").style.display = "block"
+  toggleTaskModal(true) // true indicates it's an edit operation
 }
 
 function deleteTask(index) {
@@ -313,9 +293,9 @@ document
       tasks[parseInt(id)] = task
     }
     document.getElementById("task-form").reset()
-    document.getElementById("task-form").style.display = "none"
     document.getElementById("task-id").value = ""
     saveTasks()
+    toggleTaskModal() // Close modal after saving
   })
 
 function exportTasks() {
@@ -386,7 +366,14 @@ document.addEventListener('keydown', function(event) {
   }
 
   if (event.key === 'Escape') {
-    document.getElementById('help-modal')?.style?.setProperty('display', 'none')
+    const helpModal = document.getElementById('help-modal')
+    if (helpModal && helpModal.style.display === 'block') {
+      toggleHelpModal()
+    }
+    const taskModal = document.getElementById('task-modal')
+    if (taskModal && taskModal.style.display === 'block') {
+      toggleTaskModal()
+    }
   }
 
   // Check for 't' key press for toggling form, ensuring not in an input field
@@ -395,8 +382,8 @@ document.addEventListener('keydown', function(event) {
     if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT')) {
       // Do nothing if focused on an input, textarea, or select
     } else {
-      toggleForm()
-      document.getElementById('title')?.focus()
+      toggleTaskModal() // Opens modal for new task, will reset form and focus title
+      event.preventDefault()
     }
   }
 
@@ -430,15 +417,11 @@ document.addEventListener('keydown', function(event) {
       if (activeElement.classList.contains('task')) { // This covers both Kanban .task and Calendar .calendar-task (which also has .task)
         if (currentView === 'kanban' && activeElement.dataset.taskIndex) {
           const taskIndex = parseInt(activeElement.dataset.taskIndex)
-          editTask(taskIndex)
-          document.getElementById('title')?.focus()
+          editTask(taskIndex) // This will call toggleTaskModal(true) and focus title
           event.preventDefault() // Prevent 'e' from being typed into any inputs if form opens quickly
         } else if (currentView === 'calendar' && activeElement.dataset.originalTaskIndex) {
           const taskIndex = parseInt(activeElement.dataset.originalTaskIndex)
-          editTask(taskIndex)
-          if (titleInput) {
-            titleInput.focus()
-          }
+          editTask(taskIndex) // This will call toggleTaskModal(true) and focus title
           event.preventDefault()// Prevent 'e' from being typed into any inputs if form opens quickly
         }
       }

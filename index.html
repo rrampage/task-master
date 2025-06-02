@@ -10,10 +10,13 @@
 
 <body>
   <h1>Task Master</h1>
-  <button id="show-form-btn" onclick="toggleForm()">+</button>
-  <form id="task-form">
-    <label>Title: <input type="text" id="title" required /></label>
-    <label>Description: <textarea id="description"></textarea></label>
+  <button id="show-form-btn" onclick="toggleTaskModal()">+</button>
+  <div id="task-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close-button" onclick="toggleTaskModal()">&times;</span>
+      <form id="task-form">
+        <label>Title: <input type="text" id="title" required /></label>
+        <label>Description: <textarea id="description"></textarea></label>
     <label>Tags (comma-separated): <input type="text" id="tags" /></label>
     <label>Status:
       <select id="status">
@@ -25,7 +28,9 @@
     <label>Due Date: <input type="date" id="due-date" /></label>
     <input type="hidden" id="task-id" />
     <button type="submit">Save Task</button>
-  </form>
+      </form>
+    </div>
+  </div>
 
   <div id="filter-indicator"></div>
 
