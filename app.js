@@ -401,13 +401,13 @@ document.addEventListener('keydown', function(event) {
   }
 
   if (event.key === 'Escape') {
-    const helpModal = document.getElementById('help-modal');
+    const helpModal = document.getElementById('help-modal')
     if (helpModal && helpModal.style.display === 'block') {
-      toggleHelpModal();
+      toggleHelpModal()
     }
-    const taskModal = document.getElementById('task-modal');
+    const taskModal = document.getElementById('task-modal')
     if (taskModal && taskModal.style.display === 'block') {
-      toggleTaskModal();
+      toggleTaskModal()
     }
   }
 
@@ -417,7 +417,8 @@ document.addEventListener('keydown', function(event) {
     if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT')) {
       // Do nothing if focused on an input, textarea, or select
     } else {
-      toggleTaskModal(); // Opens modal for new task, will reset form and focus title
+      toggleTaskModal() // Opens modal for new task, will reset form and focus title
+      event.preventDefault()
     }
   }
 
