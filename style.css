@@ -66,6 +66,12 @@ h1 {
   background-color: #f9f9f9;
 }
 
+.task:focus, .calendar-task:focus {
+  outline: none; /* Remove default browser outline */
+  border-color: #007bff; /* Blue border */
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5); /* Softer blue glow, good for accessibility */
+}
+
 .task.pending {
   background-color: #ffe6e6;
 }
@@ -224,4 +230,58 @@ button {
   cursor: pointer;
   background: #007bff;
   color: white;
+}
+
+/* Help Modal Styles */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1000; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+  max-width: 500px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+  position: relative;
+}
+
+.close-button {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#help-modal ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+#help-modal li {
+  margin-bottom: 8px;
+}
+
+#help-modal li strong {
+  display: inline-block;
+  width: 150px; /* Adjust as needed for alignment */
+  font-weight: bold;
 }
