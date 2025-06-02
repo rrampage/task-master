@@ -10,12 +10,7 @@ h1 {
 }
 
 #task-form {
-  display: none;
-  margin-top: 20px;
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  /* Styles moved to .modal-content or no longer needed */
 }
 
 #task-form label {

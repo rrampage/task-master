@@ -52,12 +52,25 @@ function toggleHelpModal() {
   }
 }
 
-function toggleForm() {
-  const form = document.getElementById("task-form")
-  form.style.display =
-    form.style.display === "none" || !form.style.display
-      ? "block"
-      : "none"
+function toggleTaskModal(isEdit = false) {
+  const modal = document.getElementById("task-modal");
+  const form = document.getElementById("task-form");
+  const taskIdField = document.getElementById("task-id");
+  const titleInput = document.getElementById("title");
+
+  if (modal.style.display === "block" || modal.style.display === "") {
+    modal.style.display = "none";
+  } else {
+    if (!isEdit) { // If not an edit operation, it's a new task
+      form.reset();
+      taskIdField.value = "";
+    }
+    modal.style.display = "block";
+    // Focus the title field when opening, prioritize if it's a new task or if editTask specifically requests it later
+    if (titleInput) {
+      titleInput.focus();
+    }
+  }
 }
 
 function saveTasks() {
@@ -281,7 +294,8 @@ function editTask(index) {
   document.getElementById("status").value = task.status
   document.getElementById("due-date").value = task.dueDate
   document.getElementById("task-id").value = index
-  document.getElementById("task-form").style.display = "block"
+  // document.getElementById("task-form").style.display = "block"; // Replaced by toggleTaskModal
+  toggleTaskModal(true); // true indicates it's an edit operation
 }
 
 function deleteTask(index) {
@@ -313,9 +327,10 @@ document
       tasks[parseInt(id)] = task
     }
     document.getElementById("task-form").reset()
-    document.getElementById("task-form").style.display = "none"
+    // document.getElementById("task-form").style.display = "none"; // Replaced by toggleTaskModal
     document.getElementById("task-id").value = ""
     saveTasks()
+    toggleTaskModal(); // Close modal after saving
   })
 
 function exportTasks() {
@@ -386,7 +401,14 @@ document.addEventListener('keydown', function(event) {
   }
 
   if (event.key === 'Escape') {
-    document.getElementById('help-modal')?.style?.setProperty('display', 'none')
+    const helpModal = document.getElementById('help-modal');
+    if (helpModal && helpModal.style.display === 'block') {
+      toggleHelpModal();
+    }
+    const taskModal = document.getElementById('task-modal');
+    if (taskModal && taskModal.style.display === 'block') {
+      toggleTaskModal();
+    }
   }
 
   // Check for 't' key press for toggling form, ensuring not in an input field
@@ -395,8 +417,7 @@ document.addEventListener('keydown', function(event) {
     if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT')) {
       // Do nothing if focused on an input, textarea, or select
     } else {
-      toggleForm()
-      document.getElementById('title')?.focus()
+      toggleTaskModal(); // Opens modal for new task, will reset form and focus title
     }
   }
 
@@ -430,15 +451,11 @@ document.addEventListener('keydown', function(event) {
       if (activeElement.classList.contains('task')) { // This covers both Kanban .task and Calendar .calendar-task (which also has .task)
         if (currentView === 'kanban' && activeElement.dataset.taskIndex) {
           const taskIndex = parseInt(activeElement.dataset.taskIndex)
-          editTask(taskIndex)
-          document.getElementById('title')?.focus()
+          editTask(taskIndex) // This will call toggleTaskModal(true) and focus title
           event.preventDefault() // Prevent 'e' from being typed into any inputs if form opens quickly
         } else if (currentView === 'calendar' && activeElement.dataset.originalTaskIndex) {
           const taskIndex = parseInt(activeElement.dataset.originalTaskIndex)
-          editTask(taskIndex)
-          if (titleInput) {
-            titleInput.focus()
-          }
+          editTask(taskIndex) // This will call toggleTaskModal(true) and focus title
           event.preventDefault()// Prevent 'e' from being typed into any inputs if form opens quickly
         }
       }
