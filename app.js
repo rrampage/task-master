@@ -53,22 +53,22 @@ function toggleHelpModal() {
 }
 
 function toggleTaskModal(isEdit = false) {
-  const modal = document.getElementById("task-modal");
-  const form = document.getElementById("task-form");
-  const taskIdField = document.getElementById("task-id");
-  const titleInput = document.getElementById("title");
+  const modal = document.getElementById("task-modal")
+  const form = document.getElementById("task-form")
+  const taskIdField = document.getElementById("task-id")
+  const titleInput = document.getElementById("title")
 
   if (modal.style.display === "block" || modal.style.display === "") {
-    modal.style.display = "none";
+    modal.style.display = "none"
   } else {
     if (!isEdit) { // If not an edit operation, it's a new task
-      form.reset();
-      taskIdField.value = "";
+      form.reset()
+      taskIdField.value = ""
     }
-    modal.style.display = "block";
+    modal.style.display = "block"
     // Focus the title field when opening, prioritize if it's a new task or if editTask specifically requests it later
     if (titleInput) {
-      titleInput.focus();
+      titleInput.focus()
     }
   }
 }
@@ -148,39 +148,6 @@ function renderTasks() {
     : ""
 }
 
-/*function renderCalendar() {
-  const calendar = document.getElementById('calendar-view')
-  calendar.style.display = currentView === 'calendar' ? 'block' : 'none'
-  const now = new Date()
-  const weekAhead = new Date()
-  weekAhead.setDate(now.getDate() + 7)
-  const calendarDiv = document.getElementById('calendar-tasks')
-  calendarDiv.innerHTML = ''
-
-  const grouped = {}
-  tasks.filter(task => ['pending', 'in-progress'].includes(task.status) && task.dueDate).forEach(task => {
-    const due = new Date(task.dueDate)
-    if (due >= now && due <= weekAhead) {
-      const key = task.dueDate
-      if (!grouped[key]) grouped[key] = []
-      grouped[key].push(task)
-    }
-  })
-
-  Object.keys(grouped).sort().forEach(date => {
-    const dayDiv = document.createElement('div')
-    dayDiv.className = 'calendar-day'
-    dayDiv.innerHTML = `<h4>${date}</h4>`
-    grouped[date].forEach(task => {
-      const taskDiv = document.createElement('div')
-      taskDiv.className = 'calendar-task'
-      taskDiv.style.backgroundColor = getDueColor(task.dueDate)
-      taskDiv.innerHTML = `<strong>${task.title}</strong> (${task.status})`
-      dayDiv.appendChild(taskDiv)
-    })
-    calendarDiv.appendChild(dayDiv)
-  })
-}*/
 
 function renderCalendar() {
   const columns = {
@@ -229,7 +196,7 @@ function renderCalendar() {
       card.dataset.taskDateStr = dateStr // Store the date string for navigation
 
       // Store the original task index for easier editing
-      const originalTaskIndex = tasks.findIndex(t => t.title === task.title && t.dueDate === task.dueDate && t.status === task.status);
+      const originalTaskIndex = tasks.findIndex(t => t.title === task.title && t.dueDate === task.dueDate && t.status === task.status)
       if (originalTaskIndex !== -1) {
         card.dataset.originalTaskIndex = originalTaskIndex
       }
@@ -294,8 +261,7 @@ function editTask(index) {
   document.getElementById("status").value = task.status
   document.getElementById("due-date").value = task.dueDate
   document.getElementById("task-id").value = index
-  // document.getElementById("task-form").style.display = "block"; // Replaced by toggleTaskModal
-  toggleTaskModal(true); // true indicates it's an edit operation
+  toggleTaskModal(true) // true indicates it's an edit operation
 }
 
 function deleteTask(index) {
@@ -327,10 +293,9 @@ document
       tasks[parseInt(id)] = task
     }
     document.getElementById("task-form").reset()
-    // document.getElementById("task-form").style.display = "none"; // Replaced by toggleTaskModal
     document.getElementById("task-id").value = ""
     saveTasks()
-    toggleTaskModal(); // Close modal after saving
+    toggleTaskModal() // Close modal after saving
   })
 
 function exportTasks() {
