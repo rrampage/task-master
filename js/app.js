@@ -97,11 +97,11 @@ function renderTasks() {
     let filtered = tasks.filter((task) => task.status === status)
     if (tagFilter.length) {
       filtered = filtered.filter((task) =>
-        tagFilter.every((tag) => task.tags.includes(tag)),
+        tagFilter.every((tag) => task.tags.includes(tag))
       )
     }
     filtered.sort((a, b) =>
-      (a.dueDate || "2099-12-31").localeCompare(b.dueDate || "2099-12-31"),
+      (a.dueDate || "2099-12-31").localeCompare(b.dueDate || "2099-12-31")
     )
 
     filtered.forEach((task, index) => {
@@ -327,10 +327,10 @@ function importTasks() {
       const imported = JSON.parse(e.target.result)
       if (Array.isArray(imported)) {
         const existingSet = new Set(
-          tasks.map((task) => task.title + "|" + task.dueDate),
+          tasks.map((task) => task.title + "|" + task.dueDate)
         )
         const newTasks = imported.filter(
-          (task) => !existingSet.has(task.title + "|" + task.dueDate),
+          (task) => !existingSet.has(task.title + "|" + task.dueDate)
         )
         tasks = tasks.concat(newTasks)
         saveTasks()

@@ -165,50 +165,140 @@ button {
 
 #calendar-view {
   margin-top: 40px;
-  display: none;
+  display: none; /* This will be toggled by JS */
 }
 
 #calendar-view h2 {
   text-align: center;
-}
-
-.calendar-board {
-  display: flex;
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.calendar-column {
-  flex: 1;
-  background: #f0f0f0;
-  border-radius: 8px;
-  padding: 10px;
-  min-height: 300px;
-}
-
-.calendar-column h3 {
-  text-align: center;
-}
-
-.calendar-day {
   margin-bottom: 15px;
-  background: #fff;
-  border-radius: 6px;
-  padding: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.calendar-day h4 {
-  margin-bottom: 5px;
-  font-size: 14px;
+/* New Calendar Styles */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
-.calendar-task {
-  margin-bottom: 8px;
-  padding: 6px;
-  border-radius: 6px;
-  background-color: #f9f9f9;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+.calendar-header button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.calendar-header button:hover {
+  background-color: #0056b3;
+}
+
+.calendar-header h3 {
+  margin: 0;
+  font-size: 1.5em;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  border: 1px solid #ddd;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.calendar-weekday,
+.calendar-day-cell {
+  text-align: center;
+  padding: 10px 5px;
+  border-radius: 4px;
+}
+
+.calendar-weekday {
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+
+.calendar-day-cell {
+  min-height: 80px; /* For a somewhat squarish look, adjust as needed */
+  border: 1px solid #eee;
+  position: relative; /* For positioning day number and task dots */
+  display: flex;
+  flex-direction: column; /* Stack day number and task dots */
+  justify-content: space-between; /* Push day number to top, dots to bottom */
+  font-size: 12px;
+}
+
+.calendar-day-cell .day-number {
+  align-self: flex-end; /* Position day number to the top-right */
+  font-size: 0.8em;
+  padding: 2px 4px;
+}
+
+.calendar-day-cell.other-month .day-number {
+  color: #aaa; /* Dim numbers for days not in the current month */
+}
+
+.task-dots-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end; /* Align dots to the bottom of the cell */
+  gap: 3px;
+  padding-bottom: 5px; /* Space from the bottom edge of the cell */
+  flex-wrap: wrap; /* Allow dots to wrap if many */
+  min-height: 15px; /* Ensure space for dots even if empty */
+}
+
+.task-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.task-dot-completed { background-color: #4CAF50; } /* Green */
+.task-dot-in-progress { background-color: #F5F5DC; border: 1px solid #d3d3d3; } /* Beige (added border for visibility) */
+.task-dot-not-started { background-color: #FFCCCB; } /* Light Red */
+
+
+/* Responsive adjustments for calendar */
+@media (max-width: 768px) {
+  .calendar-day-cell {
+    min-height: 60px;
+    font-size: 11px;
+  }
+  .calendar-weekday, .calendar-day-cell {
+    padding: 8px 2px;
+  }
+  .calendar-header h3 {
+    font-size: 1.2em;
+  }
+  .calendar-header button {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+  .task-dot {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-day-cell {
+    min-height: 40px; /* Even smaller for very small screens */
+  }
+   .calendar-weekday, .calendar-day-cell {
+    padding: 5px 1px;
+    font-size: 10px; /* Make weekday text smaller */
+  }
+  .calendar-day-cell .day-number {
+    font-size: 0.7em;
+  }
+  .calendar-header {
+    flex-direction: column; /* Stack header items */
+    gap: 10px;
+  }
 }
 
 #view-toggle {
