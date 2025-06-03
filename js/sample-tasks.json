@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Write weekly update",
+    "description": "Draft and send out the weekly team update.",
+    "tags": ["work", "communication"],
+    "status": "pending",
+    "dueDate": "2025-07-01"
+  },
+  {
+    "title": "Renew insurance",
+    "description": "Check policy details and renew car insurance.",
+    "tags": ["personal", "admin", "finance"],
+    "status": "pending",
+    "dueDate": "2025-07-15"
+  },
+  {
+    "title": "Write blog post on Javascript generators",
+    "description": "Research and write a technical blog post explaining Javascript generator functions.",
+    "tags": ["technical", "writing", "javascript"],
+    "status": "in-progress",
+    "dueDate": "2025-08-01"
+  }
+]
