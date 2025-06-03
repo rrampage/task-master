@@ -1,26 +1,42 @@
-let tasks = JSON.parse(localStorage.getItem("tasks")) || [
-  {
-    title: "Sample Task 1",
-    description: "Do something important.",
-    tags: ["work"],
-    status: "pending",
-    dueDate: "2025-05-20",
-  },
-  {
-    title: "Sample Task 2",
-    description: "In progress work.",
-    tags: ["project"],
-    status: "in-progress",
-    dueDate: "2025-05-21",
-  },
-  {
-    title: "Sample Task 3",
-    description: "This is done.",
-    tags: ["done"],
-    status: "completed",
-    dueDate: "2025-05-18",
-  },
-]
+// At the beginning of js/app.js
+
+let tasks = []; // Initialize as empty
+
+function initializeTasks() {
+  const localTasks = localStorage.getItem("tasks");
+  if (localTasks) {
+    tasks = JSON.parse(localTasks);
+    render(); // Render immediately if tasks are from localStorage
+  } else {
+    fetch("js/sample-tasks.json") // Path relative to index.html
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+      })
+      .then(sampleTasks => {
+        tasks = sampleTasks;
+        saveTasks(); // Save the fetched sample tasks to localStorage for next time
+        // render() is called inside saveTasks(), so no need to call it again here explicitly
+      })
+      .catch(error => {
+        console.error('Failed to load sample tasks:', error);
+        // Optionally, initialize with an empty array or a minimal default task
+        // if the fetch fails, to prevent the app from breaking.
+        // For now, tasks will remain empty if fetch fails, or handle error appropriately.
+        // tasks = []; // Or some default error task
+        // render(); // Call render even in case of error to show an empty state
+      });
+  }
+}
+
+// The existing render() function itself doesn't need to change.
+// The saveTasks() function already calls render().
+
+// Call initializeTasks when the script loads
+initializeTasks();
+
 
 let tagFilter = []
 let currentView = localStorage.getItem('taskView') || 'kanban'
@@ -351,8 +367,6 @@ function editDueDate(element, index) {
   dateDisplay.replaceWith(dateInput)
 }
 
-render()
-
 document.addEventListener('keydown', function(event) {
   // Check for '?' key press for help modal
   if (event.key === '?') {
@@ -619,3 +633,5 @@ document.addEventListener('keydown', function(event) {
 })
 
 // Ensure a newline character at the end of the file
+// The initial render() call at the very end of app.js is removed,
+// as initializeTasks() now handles the initial rendering.
