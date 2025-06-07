@@ -1,0 +1,29 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:e2e": "npx playwright test",
+    "start-server": "http-server .. -p 8000 --cors -c-1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrampage/task-master.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rrampage/task-master/issues"
+  },
+  "homepage": "https://github.com/rrampage/task-master#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "http-server": "^14.1.1"
+  }
+}
