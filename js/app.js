@@ -434,69 +434,69 @@ document.addEventListener('keydown', function(event) {
 
   // Arrow key navigation
   if (currentView === 'kanban' && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
-    event.preventDefault(); // Prevent default scrolling behavior
-    const focusedElement = document.activeElement;
+    event.preventDefault() // Prevent default scrolling behavior
+    const focusedElement = document.activeElement
 
     // Check if focus is on a valid Kanban task. If not, focus the first task in the first column.
     if (!focusedElement || !focusedElement.classList.contains('task') || !focusedElement.closest('.kanban-column')) {
-      const firstColumn = document.getElementById('pending-column'); // Assumes 'pending-column' is structurally first
+      const firstColumn = document.getElementById('pending-column') // Assumes 'pending-column' is structurally first
       if (firstColumn) {
-        const firstTask = firstColumn.querySelector('.task');
+        const firstTask = firstColumn.querySelector('.task')
         if (firstTask) {
-          firstTask.focus();
+          firstTask.focus()
         }
       }
-      return; // Exit if no valid initial focus or if focus was reset
+      return // Exit if no valid initial focus or if focus was reset
     }
 
-    const currentKanbanColumnEl = focusedElement.closest('.kanban-column');
+    const currentKanbanColumnEl = focusedElement.closest('.kanban-column')
     // This check is more of a safeguard; the initial check should handle elements not in a Kanban column.
-    if (!currentKanbanColumnEl) return;
+    if (!currentKanbanColumnEl) return
 
-    const currentKanbanColumnTasks = Array.from(currentKanbanColumnEl.querySelectorAll('.task'));
-    const currentTaskKanbanColumnIndex = currentKanbanColumnTasks.indexOf(focusedElement);
+    const currentKanbanColumnTasks = Array.from(currentKanbanColumnEl.querySelectorAll('.task'))
+    const currentTaskKanbanColumnIndex = currentKanbanColumnTasks.indexOf(focusedElement)
 
-    const kanbanColumnElements = Array.from(document.querySelectorAll('#kanban-board .kanban-column'));
-    const currentKanbanColumnBoardIndex = kanbanColumnElements.indexOf(currentKanbanColumnEl);
+    const kanbanColumnElements = Array.from(document.querySelectorAll('#kanban-board .kanban-column'))
+    const currentKanbanColumnBoardIndex = kanbanColumnElements.indexOf(currentKanbanColumnEl)
 
     if (event.key === 'ArrowUp') {
-      if (currentKanbanColumnTasks.length === 0) return; // No tasks in the current column to navigate
+      if (currentKanbanColumnTasks.length === 0) return // No tasks in the current column to navigate
       // Calculate previous index with wrap-around
-      const prevIndex = (currentTaskKanbanColumnIndex - 1 + currentKanbanColumnTasks.length) % currentKanbanColumnTasks.length;
-      currentKanbanColumnTasks[prevIndex].focus();
+      const prevIndex = (currentTaskKanbanColumnIndex - 1 + currentKanbanColumnTasks.length) % currentKanbanColumnTasks.length
+      currentKanbanColumnTasks[prevIndex].focus()
     } else if (event.key === 'ArrowDown') {
-      if (currentKanbanColumnTasks.length === 0) return; // No tasks in the current column to navigate
+      if (currentKanbanColumnTasks.length === 0) return // No tasks in the current column to navigate
       // Calculate next index with wrap-around
-      const nextIndex = (currentTaskKanbanColumnIndex + 1) % currentKanbanColumnTasks.length;
-      currentKanbanColumnTasks[nextIndex].focus();
+      const nextIndex = (currentTaskKanbanColumnIndex + 1) % currentKanbanColumnTasks.length
+      currentKanbanColumnTasks[nextIndex].focus()
     } else if (event.key === 'ArrowLeft') {
       // Do not navigate if there's only one column or no columns
-      if (kanbanColumnElements.length <= 1) return;
+      if (kanbanColumnElements.length <= 1) return
 
       // Iterate leftwards to find the next column with tasks
       for (let i = 1; i < kanbanColumnElements.length; i++) {
         let prevKanbanColumnBoardIndexAttempt = (currentKanbanColumnBoardIndex - i + kanbanColumnElements.length) % kanbanColumnElements.length;
-        const prevColumn = kanbanColumnElements[prevKanbanColumnBoardIndexAttempt];
-        const prevColumnTasks = Array.from(prevColumn.querySelectorAll('.task'));
+        const prevColumn = kanbanColumnElements[prevKanbanColumnBoardIndexAttempt]
+        const prevColumnTasks = Array.from(prevColumn.querySelectorAll('.task'))
         if (prevColumnTasks.length > 0) {
-          prevColumnTasks[0].focus(); // Focus the first task of that column
-          break; // Exit loop once a task is focused
+          prevColumnTasks[0].focus() // Focus the first task of that column
+          break // Exit loop once a task is focused
         }
       }
       // If the loop completes, it means no other column with tasks was found to the left.
       // Focus remains in the current task/column.
     } else if (event.key === 'ArrowRight') {
       // Do not navigate if there's only one column or no columns
-      if (kanbanColumnElements.length <= 1) return;
+      if (kanbanColumnElements.length <= 1) return
 
       // Iterate rightwards to find the next column with tasks
       for (let i = 1; i < kanbanColumnElements.length; i++) {
-        let nextKanbanColumnBoardIndexAttempt = (currentKanbanColumnBoardIndex + i) % kanbanColumnElements.length;
-        const nextColumn = kanbanColumnElements[nextKanbanColumnBoardIndexAttempt];
-        const nextColumnTasks = Array.from(nextColumn.querySelectorAll('.task'));
+        let nextKanbanColumnBoardIndexAttempt = (currentKanbanColumnBoardIndex + i) % kanbanColumnElements.length
+        const nextColumn = kanbanColumnElements[nextKanbanColumnBoardIndexAttempt]
+        const nextColumnTasks = Array.from(nextColumn.querySelectorAll('.task'))
         if (nextColumnTasks.length > 0) {
-          nextColumnTasks[0].focus(); // Focus the first task of that column
-          break; // Exit loop once a task is focused
+          nextColumnTasks[0].focus() // Focus the first task of that column
+          break // Exit loop once a task is focused
         }
       }
       // If the loop completes, it means no other column with tasks was found to the right.
