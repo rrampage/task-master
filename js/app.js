@@ -1,27 +1,186 @@
 let tasks = []
 let tagFilter = []
 let currentView = localStorage.getItem('taskView') || 'kanban'
+let currentUser = null
+let authMode = 'login'
+let csrfToken = localStorage.getItem('csrfToken') || null
 
-function initializeTasks() {
-  const localTasks = localStorage.getItem("tasks")
-  if (localTasks) {
-    tasks = JSON.parse(localTasks)
+function updateAuthUI() {
+  const userInfo = document.getElementById('user-info')
+  const loginControls = document.getElementById('login-controls')
+  if (currentUser) {
+    if (userInfo) userInfo.style.display = 'inline'
+    if (document.getElementById('username-display')) document.getElementById('username-display').innerText = currentUser.username
+    if (loginControls) loginControls.style.display = 'none'
   } else {
-    fetch("js/sample-tasks.json") // Path relative to index.html
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok ' + response.statusText)
+    if (userInfo) userInfo.style.display = 'none'
+    if (loginControls) loginControls.style.display = 'inline'
+  }
+}
+
+async function checkAuthStatus() {
+  try {
+    const res = await fetch('/api/me')
+    if (res.ok) {
+      currentUser = await res.json()
+      updateAuthUI()
+      return true
+    }
+  } catch (e) {
+    console.error("Auth check failed", e)
+  }
+  return false
+}
+
+async function fetchTasksFromServer() {
+  try {
+    const res = await fetch('/api/tasks')
+    if (res.ok) {
+      const serverTasks = await res.json()
+      tasks = serverTasks || []
+      render()
+    }
+  } catch (e) {
+    console.error("Failed to fetch tasks from server", e)
+  }
+}
+
+async function syncTasksToServer() {
+  if (!currentUser) return
+  try {
+    await fetch('/api/tasks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken || ''
+      },
+      body: JSON.stringify(tasks)
+    })
+  } catch (e) {
+    console.error("Failed to sync tasks", e)
+  }
+}
+
+function toggleAuthModal(mode) {
+  const modal = document.getElementById('auth-modal')
+  if (modal.style.display === 'flex') {
+    modal.style.display = 'none'
+  } else {
+    authMode = mode || 'login'
+    document.getElementById('auth-title').innerText = authMode === 'login' ? 'Login' : 'Register'
+    document.getElementById('auth-submit-btn').innerText = authMode === 'login' ? 'Login' : 'Register'
+    document.getElementById('auth-error').style.display = 'none'
+    document.getElementById('auth-username').value = ''
+    document.getElementById('auth-password').value = ''
+    modal.style.display = 'flex'
+  }
+}
+
+async function handleAuthSubmit(e) {
+  e.preventDefault()
+  const username = document.getElementById('auth-username').value
+  const password = document.getElementById('auth-password').value
+  const endpoint = authMode === 'login' ? '/api/login' : '/api/register'
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      currentUser = data
+      csrfToken = res.headers.get('X-CSRF-Token')
+      if (csrfToken) {
+        localStorage.setItem('csrfToken', csrfToken)
+      }
+      updateAuthUI()
+      document.getElementById('auth-modal').style.display = 'none'
+
+      if (authMode === 'register') {
+        document.getElementById('apikey-display').value = data.api_key
+        document.getElementById('apikey-modal').style.display = 'flex'
+        if (tasks.length > 0) {
+          syncTasksToServer()
         }
-        return response.json()
-      })
-      .then(sampleTasks => {
-        tasks = sampleTasks
-        saveTasks() // Save the fetched sample tasks to localStorage for next time
-        // render() is called inside saveTasks(), so no need to call it again here explicitly
-      })
-      .catch(error => {
-        console.error('Failed to load sample tasks:', error)
-      })
+      } else {
+        await fetchTasksFromServer()
+      }
+    } else {
+      const errorText = await res.text()
+      const errorDiv = document.getElementById('auth-error')
+      errorDiv.innerText = errorText || 'Authentication failed'
+      errorDiv.style.display = 'block'
+    }
+  } catch (error) {
+    console.error('Auth error:', error)
+    const errorDiv = document.getElementById('auth-error')
+    errorDiv.innerText = 'Network error'
+    errorDiv.style.display = 'block'
+  }
+}
+
+async function logout() {
+  try {
+    await fetch('/api/logout', {
+      method: 'POST',
+      headers: {
+        'X-CSRF-Token': csrfToken || ''
+      }
+    })
+    currentUser = null
+    csrfToken = null
+    localStorage.removeItem('csrfToken')
+    updateAuthUI()
+    tasks = []
+    localStorage.removeItem("tasks") // Clear local storage to prevent data leakage
+    render()
+  } catch (e) {
+    console.error('Logout error:', e)
+  }
+}
+
+function copyApiKey() {
+  const apiKeyField = document.getElementById('apikey-display')
+  apiKeyField.select()
+  apiKeyField.setSelectionRange(0, 99999) // For mobile devices
+  navigator.clipboard.writeText(apiKeyField.value)
+}
+
+function uuidv4() {
+  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+  );
+}
+
+async function initializeTasks() {
+  const isAuthenticated = await checkAuthStatus()
+  if (isAuthenticated) {
+    await fetchTasksFromServer()
+  } else {
+    const localTasks = localStorage.getItem("tasks")
+    if (localTasks) {
+      tasks = JSON.parse(localTasks)
+      render()
+    } else {
+      fetch("js/sample-tasks.json") // Path relative to index.html
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText)
+          }
+          return response.json()
+        })
+        .then(sampleTasks => {
+          tasks = sampleTasks.map(t => { t.id = t.id || uuidv4(); return t })
+          saveTasks() // Save the fetched sample tasks to localStorage for next time
+          // render() is called inside saveTasks(), so no need to call it again here explicitly
+        })
+        .catch(error => {
+          console.error('Failed to load sample tasks:', error)
+        })
+    }
   }
 }
 
@@ -81,6 +240,9 @@ function toggleTaskModal(isEdit = false) {
 
 function saveTasks() {
   localStorage.setItem("tasks", JSON.stringify(tasks))
+  if (currentUser) {
+    syncTasksToServer()
+  }
   render()
 }
 
@@ -265,8 +427,8 @@ function editTask(index) {
   document.getElementById("description").value = task.description
   document.getElementById("tags").value = task.tags.join(", ")
   document.getElementById("status").value = task.status
-  document.getElementById("due-date").value = task.dueDate
-  document.getElementById("task-id").value = index
+  document.getElementById("due-date").value = task.dueDate || ""
+  document.getElementById("task-id").value = task.id || index // Keep index for fallback
   toggleTaskModal(true) // true indicates it's an edit operation
 }
 
@@ -294,9 +456,17 @@ document
       dueDate: document.getElementById("due-date").value,
     }
     if (id === "") {
+      task.id = uuidv4()
       tasks.push(task)
     } else {
-      tasks[parseInt(id)] = task
+      task.id = id
+      const idx = tasks.findIndex(t => t.id === id)
+      if (idx !== -1) {
+        tasks[idx] = task
+      } else {
+        // Fallback for older tasks without an id
+        tasks[parseInt(id)] = task
+      }
     }
     document.getElementById("task-form").reset()
     document.getElementById("task-id").value = ""

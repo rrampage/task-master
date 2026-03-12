@@ -9,7 +9,19 @@
 </head>
 
 <body>
-  <h1>Task Master</h1>
+  <div class="header-container" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;">
+    <h1>Task Master</h1>
+    <div id="auth-controls">
+      <span id="user-info" style="display: none;">
+        Welcome, <span id="username-display"></span>
+        <button onclick="logout()">Logout</button>
+      </span>
+      <span id="login-controls">
+        <button onclick="toggleAuthModal('login')">Login</button>
+        <button onclick="toggleAuthModal('register')">Register</button>
+      </span>
+    </div>
+  </div>
   <button id="show-form-btn" onclick="toggleTaskModal()">+</button>
   <div id="task-modal" class="modal" style="display: none;">
     <div class="modal-content">
@@ -33,6 +45,33 @@
   </div>
 
   <div id="filter-indicator"></div>
+
+  <!-- Auth Modal -->
+  <div id="auth-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close-button" onclick="toggleAuthModal()">&times;</span>
+      <h2 id="auth-title">Login</h2>
+      <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+        <label>Username: <input type="text" id="auth-username" required minlength="3" /></label>
+        <label>Password: <input type="password" id="auth-password" required minlength="6" /></label>
+        <div id="auth-error" style="color: red; display: none; margin-bottom: 10px;"></div>
+        <button type="submit" id="auth-submit-btn">Login</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- API Key Modal -->
+  <div id="apikey-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close-button" onclick="document.getElementById('apikey-modal').style.display='none'">&times;</span>
+      <h2>Registration Successful</h2>
+      <p>Save this API Key. You can use it to access your tasks from the CLI or API.</p>
+      <p style="color: red; font-weight: bold;">This will only be shown once!</p>
+      <input type="text" id="apikey-display" readonly style="width: 100%; margin-bottom: 10px; padding: 5px;" />
+      <button onclick="copyApiKey()">Copy API Key</button>
+      <button onclick="document.getElementById('apikey-modal').style.display='none'">Close</button>
+    </div>
+  </div>
 
   <div class="kanban" id="kanban-board">
     <div class="kanban-column" id="pending-column" ondragover="allowDrop(event)"
