@@ -29,3 +29,7 @@ Thumbs.db
 test-results/
 playwright-report/
 playwright/.cache/
+server_bin
+cli_bin
+data/
+debug.log
